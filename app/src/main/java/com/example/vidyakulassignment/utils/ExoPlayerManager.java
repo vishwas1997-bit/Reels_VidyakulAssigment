@@ -1,8 +1,11 @@
 package com.example.vidyakulassignment.utils;
 
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
@@ -12,11 +15,14 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.example.vidyakulassignment.R;
 import com.github.rubensousa.previewseekbar.PreviewBar;
 import com.github.rubensousa.previewseekbar.PreviewLoader;
 import com.github.rubensousa.previewseekbar.media3.PreviewTimeBar;
+
+import java.io.IOException;
 
 @OptIn(markerClass = UnstableApi.class)
 public class ExoPlayerManager implements PreviewLoader, PreviewBar.OnScrubListener {
@@ -37,9 +43,9 @@ public class ExoPlayerManager implements PreviewLoader, PreviewBar.OnScrubListen
         }
     };
 
-    public ExoPlayerManager(PlayerView playerView,
-                            PreviewTimeBar previewTimeBar,
-                            ImageView imageView) {
+    public ExoPlayerManager(@NonNull PlayerView playerView,
+                            @NonNull PreviewTimeBar previewTimeBar,
+                            @NonNull ImageView imageView) {
         this.playerView = playerView;
         this.imageView = imageView;
         this.previewTimeBar = previewTimeBar;
@@ -97,24 +103,33 @@ public class ExoPlayerManager implements PreviewLoader, PreviewBar.OnScrubListen
                 .build();
         player.setPlayWhenReady(true);
         player.setMediaItem(new MediaItem.Builder()
-                .setUri(Uri.parse("android.resource://com.example.vidyakulassignment/"+ R.raw.shivali_moments))
+                .setUri(Uri.parse("android.resource://com.example.vidyakulassignment/"+ R.raw.feel_god))
                 .build());
         player.addListener(eventListener);
         player.prepare();
+        player.setRepeatMode(Player.REPEAT_MODE_ONE);
         return player;
     }
+
+
 
     @Override
     public void loadPreview(long currentPosition, long max) {
         if (player.isPlaying()) {
             player.setPlayWhenReady(false);
         }
-        String thumbnailUrl = "android.resource://com.example.vidyakulassignment/"+ R.raw.shivali_moments;
-
+        String thumbnailUrl = "android.resource://com.example.vidyakulassignment/"+ R.raw.feel_god;
+//
+//
+//        Glide.with(imageView)
+//                .load(thumbnailUrl)
+//                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+//                .transform(new GlideThumbnailTransformationNewLib(currentPosition))
+//                .into(imageView);
+        RequestOptions options = new RequestOptions().frame(currentPosition*1000);
         Glide.with(imageView)
                 .load(thumbnailUrl)
-                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                .transform(new GlideThumbnailTransformation(currentPosition))
+                .apply(options)
                 .into(imageView);
     }
 

@@ -1,40 +1,28 @@
 package com.example.vidyakulassignment.presentation
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.media.MediaFormat
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
-import android.util.DisplayMetrics
-import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.databinding.DataBindingUtil
-import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.video.VideoFrameMetadataListener
 import androidx.media3.ui.DefaultTimeBar
-import androidx.media3.ui.TimeBar
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.vidyakulassignment.R
 import com.example.vidyakulassignment.databinding.ActivityMainBinding
-import com.example.vidyakulassignment.utils.GlideThumbnailTransformation
+import com.example.vidyakulassignment.domain.model.ReelsLocalPathList
+import com.example.vidyakulassignment.presentation.reels.ReelViewModel
+import com.example.vidyakulassignment.presentation.reels.ReelsActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -55,6 +43,10 @@ class MainActivity : AppCompatActivity() {
         binding.nxtBtn.setOnClickListener {
             startActivity(Intent(this, NewActivity::class.java))
         }
+
+        binding.nxtBtnReels.setOnClickListener {
+            startActivity(Intent(this, ReelsActivity::class.java))
+        }
     }
 
     @OptIn(UnstableApi::class)
@@ -66,34 +58,15 @@ class MainActivity : AppCompatActivity() {
 //        https://user-images.githubusercontent.com/90382113/170887700-e405c71e-fe31-458d-8572-aea2e801eecc.mp4
 
         val videoUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.shivali_moments)
-        val mediaItem = MediaItem.fromUri(videoUri)
-        player.setMediaItem(mediaItem)
+//        val mediaItem = MediaItem.fromUri(videoUri)
+        val mediaItemList = ArrayList<MediaItem>()
+        for (data in ReelsLocalPathList.list){
+            val mediaItem = MediaItem.fromUri(data)
+            mediaItemList.add(mediaItem)
+        }
+        player.setMediaItems(mediaItemList)
         player.prepare()
-        player.play()
-
-        player.setVideoFrameMetadataListener(object : VideoFrameMetadataListener {
-            override fun onVideoFrameAboutToBeRendered(
-                presentationTimeUs: Long,
-                releaseTimeNs: Long,
-                format: Format,
-                mediaFormat: MediaFormat?
-            ) {
-//                val frame = getVideoFrame(this@MainActivity, videoUri, presentationTimeUs) ?: return
-//                binding.preview.setImageBitmap(frame)
-            }
-
-        })
-
-
-
-        player.addListener(object : Player.Listener {
-            override fun onPlayerError(error: PlaybackException) {
-                Toast.makeText(applicationContext, "Error", Toast.LENGTH_SHORT).show()
-                super.onPlayerError(error)
-            }
-        })
-
-//        initPreview()
+//        player.play()
     }
 
     @OptIn(UnstableApi::class)
@@ -151,89 +124,5 @@ class MainActivity : AppCompatActivity() {
             playWhenReady = exoPlayer.playWhenReady
             exoPlayer.release()
         }
-    }
-
-    fun getVideoFrame(context: Context, uri: Uri, time: Long): Bitmap? {
-        var bitmap: Bitmap? = null
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(context, uri)
-            bitmap = retriever.getFrameAtTime(time)
-        } catch (ex: RuntimeException) {
-            ex.printStackTrace()
-        } finally {
-            try {
-                retriever.release()
-            } catch (ex: RuntimeException) {
-                ex.printStackTrace()
-            }
-        }
-        return bitmap
-    }
-
-    @OptIn(UnstableApi::class)
-    private fun initPreview() {
-        val thumbnailUrl =
-            "https://bitdash-a.akamaihd.net/content/MI201109210084_1/thumbnails/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.jpg"
-        player.addListener(object : TimeBar.OnScrubListener, Player.Listener {
-            override fun onScrubStart(timeBar: TimeBar, position: Long) {
-
-            }
-
-            override fun onScrubMove(timeBar: TimeBar, position: Long) {
-                previewFrameLayout.visibility = View.VISIBLE
-                val targetX = updatePreviewX(position.toInt(), player.duration.toInt())
-                previewFrameLayout.x = targetX.toFloat()
-                Glide.with(scrubbingPreview)
-                    .load(thumbnailUrl)
-                    .transform(GlideThumbnailTransformation(position))
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .into(scrubbingPreview)
-            }
-
-            override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
-                previewFrameLayout.visibility = View.INVISIBLE
-            }
-
-        })
-
-    }
-
-
-    @OptIn(UnstableApi::class)
-    private fun updatePreviewX(progress: Int, max: Int): Int {
-        if (max == 0) {
-            return 0
-        }
-
-        val parent = previewFrameLayout.parent as ViewGroup
-        val layoutParams = previewFrameLayout.layoutParams as ViewGroup.MarginLayoutParams
-        val offset = progress.toFloat() / max
-        val minimumX: Int = previewFrameLayout.left
-        val maximumX = (parent.width - parent.paddingRight - layoutParams.rightMargin)
-
-// We remove the padding of the scrubbing, if you have a custom size juste use dimen to calculate this
-        val previewPaddingRadius: Int =
-            dpToPx(resources.displayMetrics, DefaultTimeBar.DEFAULT_SCRUBBER_DRAGGED_SIZE_DP).div(2)
-        val previewLeftX = (exo_progress as View).left.toFloat()
-        val previewRightX = (exo_progress as View).right.toFloat()
-        val previewSeekBarStartX: Float = previewLeftX + previewPaddingRadius
-        val previewSeekBarEndX: Float = previewRightX - previewPaddingRadius
-        val currentX = (previewSeekBarStartX + (previewSeekBarEndX - previewSeekBarStartX) * offset)
-        val startX: Float = currentX - previewFrameLayout.width / 2f
-        val endX: Float = startX + previewFrameLayout.width
-
-        // Clamp the moves
-        return if (startX >= minimumX && endX <= maximumX) {
-            startX.toInt()
-        } else if (startX < minimumX) {
-            minimumX
-        } else {
-            maximumX - previewFrameLayout.width
-        }
-    }
-
-    private fun dpToPx(displayMetrics: DisplayMetrics, dps: Int): Int {
-        return (dps * displayMetrics.density).toInt()
     }
 }

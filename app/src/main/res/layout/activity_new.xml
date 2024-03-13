@@ -40,8 +40,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="16dp"
-            app:controller_layout_id="@layout/exoplayer_controls"
             app:layout_constraintDimensionRatio="16:9"
+            app:controller_layout_id="@layout/custom_media_player_control"
             app:layout_constraintTop_toBottomOf="@id/timeBarSampleTextView" />
 
         <androidx.core.widget.NestedScrollView

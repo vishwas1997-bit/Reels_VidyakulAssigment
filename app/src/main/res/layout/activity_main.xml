@@ -23,6 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:use_controller="true"
+            app:show_timeout="0"
+            app:hide_on_touch="false"
             app:controller_layout_id="@layout/custom_exo_player_layout"/>
 
         <Button
@@ -31,6 +33,13 @@
             android:text="New Screen"
             android:id="@+id/nxtBtn"
             />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reels Screen"
+            android:id="@+id/nxtBtnReels"
+            app:layout_constraintTop_toBottomOf="@id/nxtBtn"/>
 
 <!--        <androidx.appcompat.widget.AppCompatImageView-->
 <!--            android:layout_width="90dp"-->
