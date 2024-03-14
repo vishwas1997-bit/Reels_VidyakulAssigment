@@ -208,5 +208,3 @@ object ReelsModel {
         )
     )
 }
-
-
