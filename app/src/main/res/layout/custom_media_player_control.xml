@@ -24,8 +24,7 @@
             app:previewAnimationEnabled="true"
             app:previewFrameLayout="@id/previewFrameLayout"
             app:scrubber_dragged_size="24dp"
-            app:scrubber_enabled_size="16dp"
-            />
+            app:scrubber_enabled_size="16dp" />
 
         <!-- app:layout_constraintDimensionRatio="1:1.4" -->
 
@@ -66,8 +65,6 @@
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@id/controlsLayout"
-                app:layout_constraintStart_toStartOf="parent"
                 tools:text="18:20" />
         </FrameLayout>
 

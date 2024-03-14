@@ -14,22 +14,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VidyakulAssignment"
         tools:targetApi="31">
+
         <activity
             android:name=".presentation.reels.ReelsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"/>
-        <activity
-            android:name=".presentation.NewActivity"
-            android:exported="false" />
-        <activity
-            android:name=".presentation.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
     </application>
 
 </manifest>

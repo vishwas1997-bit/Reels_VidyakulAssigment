@@ -3,38 +3,33 @@ package com.example.vidyakulassignment.presentation.reels
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
-import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
-import androidx.media3.ui.PlayerView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.example.vidyakulassignment.R
+import com.example.vidyakulassignment.data.repositoryImpl.ReelsRepositoryImpl
 import com.example.vidyakulassignment.databinding.ActivityReelsBinding
-import com.example.vidyakulassignment.domain.model.ReelsLocalPathList
 import com.example.vidyakulassignment.presentation.reels.adapter.ReelViewPagerAdapter
-import com.example.vidyakulassignment.utils.ExoManger
-import com.github.rubensousa.previewseekbar.animator.PreviewFadeAnimator
-import com.github.rubensousa.previewseekbar.media3.PreviewTimeBar
+import com.example.vidyakulassignment.utils.exoManagerUtils.ExoPlayerManger
 
 
-class ReelsActivity : AppCompatActivity(), ReelViewPagerAdapter.ReelViewPagerAdapterInteraction {
+class ReelsActivity : AppCompatActivity() {
 
     private var _binding: ActivityReelsBinding? = null
     private val binding get() = _binding!!
 
     private val logTag = "ReelsActivity_Log"
     private lateinit var reelViewPagerAdapter: ReelViewPagerAdapter
+    private lateinit var reelViewModel: ReelViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         _binding = DataBindingUtil.setContentView(this, R.layout.activity_reels)
-
-        ExoManger.createPlayer(this)
-        initAdapter()
+        ExoPlayerManger.createPlayer(this)
+        initActivity()
+        uiObserver()
 
         binding.reelsViewPager.registerOnPageChangeCallback(object : OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -58,39 +53,40 @@ class ReelsActivity : AppCompatActivity(), ReelViewPagerAdapter.ReelViewPagerAda
         })
     }
 
-    private fun initAdapter() {
-        reelViewPagerAdapter = ReelViewPagerAdapter(ReelsLocalPathList.list)
+    private fun initActivity() {
+        reelViewPagerAdapter = ReelViewPagerAdapter()
         binding.reelsViewPager.adapter = reelViewPagerAdapter
+        reelViewModel = ViewModelProvider(
+            this,
+            ReelsViewModelFactory(ReelsRepositoryImpl())
+        )[ReelViewModel::class.java]
+        reelViewModel.getReels()
+    }
+
+    private fun uiObserver() {
+        reelViewModel.reelsLiveData.observe(this) { reels ->
+            reelViewPagerAdapter.submitList(reels)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        ExoManger.onResume()
+        ExoPlayerManger.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        ExoManger.onPause()
+        ExoPlayerManger.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-        ExoManger.onStop()
+        ExoPlayerManger.onStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        ExoManger.onDestroy()
-    }
-
-
-    override fun onNavigateToNewReel(
-        videoPlayer: PlayerView,
-        previewTimeBar: PreviewTimeBar,
-        previewImage: ImageView,
-        mediaPath: String
-    ) {
-//        exoPlayerManager?.addMediaItem(mediaPath)
+        ExoPlayerManger.onDestroy()
     }
 }
